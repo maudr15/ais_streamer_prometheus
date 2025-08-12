@@ -77,6 +77,8 @@ The data is published to the topic `/ais/stream` in a String message. The format
 
 <img src="dimensions_overview.png" height="500">
 
+**Important:** Not all data fields are always provided by the AIS. If one is empty, it will have the value `null`.
+
 
 ### Examples
 
