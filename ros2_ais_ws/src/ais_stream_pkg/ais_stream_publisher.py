@@ -144,7 +144,7 @@ class AISStreamNode(Node):
                             "courseOverGround": props.get("courseOverGround"),
                             "latitude": lat,
                             "longitude": lon,
-                            "name": props.get("name"),
+                            "shipName": props.get("name"),
                             "rateOfTurn": props.get("rateOfTurn"),
                             "shipType": props.get("shipType"),
                             "speedOverGround": props.get("speedOverGround"),

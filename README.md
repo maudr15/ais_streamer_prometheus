@@ -59,7 +59,7 @@ The data is published to the topic `/ais/stream` in a String message. The format
 - **courseOverGround**: Direction of the ship's trajectory in degrees
 - **latitude**: Latitude in degrees
 - **longitude**: longitude in degrees
-- **name**: Name of the ship
+- **shipName**: Name of the ship
 - **rateOfTurn**: Heading variation in degrees/minute
 - **shipType**: Type of the ship according to [AIS Specification](https://api.vtexplorer.com/docs/ref-aistypes.html).
 - **speedOverGround**: Ship's velocity in knots
@@ -70,9 +70,9 @@ The data is published to the topic `/ais/stream` in a String message. The format
 - **dimensionB**: Distance (meters) from AIS GPS antenna to the Stern of the vessel
 - **dimensionC**: Distance (meters) from AIS GPS antenna to the Port of the vessel
 - **dimensionD**: Distance (meters) from AIS GPS antenna to the Starboard of the vessel
-- **draught**: Height underwater of the ship in meters
-- **shipLength**: Total length of the ship
-- **shipWidth**: Total width of the ship
+- **draught**: Height underwater of the ship in centimeters
+- **shipLength**: Total length of the ship in meters
+- **shipWidth**: Total width of the ship in meters
 - **msgTime**: Timestamp of the update in the ISO 8601  standard: `YYY-MM-DDTHH:MM:SS±HH:MM`
 
 <img src="dimensions_overview.png" height="500">
