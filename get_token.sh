@@ -18,7 +18,6 @@ RESP="$(curl -s -X POST "$TOKEN_URL" \
   --data-urlencode client_secret=${CLIENT_SECRET} \
   --data-urlencode scope=ais \
   --data-urlencode grant_type=client_credentials)"
-  #--data "grant_type=client_credentials&client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&scope=${SCOPE}" \
 
 TOKEN="$(echo "$RESP" | jq -r '.access_token')"
 

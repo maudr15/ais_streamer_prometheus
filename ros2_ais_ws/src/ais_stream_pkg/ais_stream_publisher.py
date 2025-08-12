@@ -9,16 +9,18 @@ import os
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from sensor_msgs.msg import NavSatFix
 from pathlib import Path
 
 # =========================
 # Configuration
 # =========================
-REFERENCE_LAT = 63.4305   # Trondheim
-REFERENCE_LON = 10.3951
+DEFAULT_LAT = 63.4305   # Trondheim
+DEFAULT_LON = 10.3951
 RADIUS_KM = 20.0
 STREAM_URL = "https://live.ais.barentswatch.no/v1/combined?modelType=Full&modelFormat=Geojson"
-TOPIC = "/ais/stream"
+PUBTOPIC = "/ais/stream"
+SUBTOPIC = "/navigation/fix"
 RECONNECT_DELAY_SEC = 5.0
 READ_TIMEOUT_SEC = 90
 
@@ -73,12 +75,20 @@ def try_extract_latlon(obj):
 class AISStreamNode(Node):
     def __init__(self):
         super().__init__("ais_stream_publisher")
-        self.publisher_ = self.create_publisher(String, TOPIC, 10)
+        self.ref_latitude = DEFAULT_LAT
+        self.ref_longitude = DEFAULT_LON
+        self.publisher_ = self.create_publisher(String, PUBTOPIC, 10)
+        self.pose_sub = self.create_subscription(
+            NavSatFix,
+            SUBTOPIC,
+            self.pose_callback,
+            10
+        )
         self.session = requests.Session()
         self.stop_event = threading.Event()
         self.stream_thread = threading.Thread(target=self._stream_loop, daemon=True)
         self.stream_thread.start()
-        self.get_logger().info(f"Streaming AIS data within {RADIUS_KM} km of ({REFERENCE_LAT}, {REFERENCE_LON})")
+        self.get_logger().info(f"Streaming AIS data within {RADIUS_KM} km of ({self.ref_latitude}, {self.ref_longitude})")
 
     def destroy_node(self):
         self.stop_event.set()
@@ -87,10 +97,6 @@ class AISStreamNode(Node):
         except Exception:
             pass
         super().destroy_node()
-        #try:
-            #os.remove(TOKEN_FILE)
-        #except Exception:
-        #    pass
 
     def _stream_loop(self):
         while not self.stop_event.is_set():
@@ -129,7 +135,7 @@ class AISStreamNode(Node):
                         if not mmsi or not isinstance(lat, (float, int)) or not isinstance(lon, (float, int)):
                             continue
 
-                        dist_km = haversine_km(REFERENCE_LAT, REFERENCE_LON, lat, lon)
+                        dist_km = haversine_km(self.ref_latitude, self.ref_longitude, lat, lon)
                         if dist_km > RADIUS_KM:
                             continue
 
@@ -161,6 +167,10 @@ class AISStreamNode(Node):
             except Exception as e:
                 self.get_logger().warn(f"Streaming failed: {e}. Retrying...")
                 time.sleep(RECONNECT_DELAY_SEC)
+                
+    def pose_callback(self, msg):
+        self.ref_latitude = msg.latitude
+        self.ref_longitude = msg.longitude
 
 
 def main():

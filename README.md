@@ -27,11 +27,7 @@ The script requires token authentication from Barentswatch to retrieve data. The
 3. Get an authentication token:
    1. Open the file `get_token.sh`.
    2. Set the variables `CLIENT_ID`and `CLIENT_SECRET` to match those you set previously (/!\ for the ID, the format is `email:client_name`; you can find it on your online account).
-   3. Install `jq`: 
-   ```bash
-   sudo apt install jq
-   ```
-   4. Get and install the token:
+   3. Get and install the token:
    ```
    bash get_token.sh
    ```
