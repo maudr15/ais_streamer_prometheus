@@ -17,8 +17,7 @@ from pathlib import Path
 REFERENCE_LAT = 63.4305   # Trondheim
 REFERENCE_LON = 10.3951
 RADIUS_KM = 20.0
-STREAM_URL = "https://live.ais.barentswatch.no/v1/combined"
-TOKEN_FILE = "../../../token.txt"
+STREAM_URL = "https://live.ais.barentswatch.no/v1/combined?modelType=Full&modelFormat=Geojson"
 TOPIC = "/ais/stream"
 RECONNECT_DELAY_SEC = 5.0
 READ_TIMEOUT_SEC = 90
@@ -114,27 +113,46 @@ class AISStreamNode(Node):
                         except json.JSONDecodeError:
                             continue
 
-                        latlon = try_extract_latlon(obj)
-                        mmsi = obj.get("mmsi")
-                        if not latlon or not mmsi:
-                            continue  # Skip incomplete data
+                        # GeoJSON Feature format
+                        if obj.get("type") != "Feature":
+                            continue
 
-                        lat, lon = latlon
+                        geometry = obj.get("geometry", {})
+                        props = obj.get("properties", {})
+
+                        coords = geometry.get("coordinates")
+                        if not isinstance(coords, (list, tuple)) or len(coords) < 2:
+                            continue
+
+                        lon, lat = coords[0], coords[1]
+                        mmsi = props.get("mmsi")
+                        if not mmsi or not isinstance(lat, (float, int)) or not isinstance(lon, (float, int)):
+                            continue
+
                         dist_km = haversine_km(REFERENCE_LAT, REFERENCE_LON, lat, lon)
                         if dist_km > RADIUS_KM:
                             continue
 
+                        # Format output to your expected structure
                         vessel_data = {
-                            "courseOverGround": obj.get("courseOverGround"),
+                            "courseOverGround": props.get("courseOverGround"),
                             "latitude": lat,
                             "longitude": lon,
-                            "name": obj.get("name"),
-                            "rateOfTurn": obj.get("rateOfTurn"),
-                            "shipType": obj.get("shipType"),
-                            "speedOverGround": obj.get("speedOverGround"),
-                            "trueHeading": obj.get("trueHeading"),
+                            "name": props.get("name"),
+                            "rateOfTurn": props.get("rateOfTurn"),
+                            "shipType": props.get("shipType"),
+                            "speedOverGround": props.get("speedOverGround"),
+                            "trueHeading": props.get("trueHeading"),
                             "mmsi": mmsi,
-                            "msgtime": obj.get("msgtime"),
+                            "destination": props.get("destination"),
+                            "dimensionA": props.get("dimensionA"),
+                            "dimensionB": props.get("dimensionB"),
+                            "dimensionC": props.get("dimensionC"),
+                            "dimensionD": props.get("dimensionD"),
+                            "draught": props.get("draught"),
+                            "shipLength": props.get("shipLength"),
+                            "shipWidth": props.get("shipWidth"),
+                            "msgtime": props.get("msgtime"),
                         }
 
                         msg = String()

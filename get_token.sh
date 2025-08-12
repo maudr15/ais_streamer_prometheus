@@ -31,4 +31,3 @@ fi
 
 echo -n "$TOKEN" > "$OUT_FILE"
 echo "Wrote access token to ${OUT_FILE}"
-export AIS_TOKEN_PATH="$(pwd)/token.txt"
